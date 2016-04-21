@@ -18,8 +18,8 @@ S_   section(paragraph)
 P_   portion(read by a host)
 _N   number, count
 
-For those who are new to python, remember, 
-1. The index of a python list starts with 0.
+For those who are new to Python, remember, 
+1. The index of a Python list starts with 0.
 2. Variables in Python are pointers. So to copy a list but not the address of the list, use a=copy.deepcopy(b), instead of a=b.
 
 Progress: Hope to improve efficiency of DISTRIBUTE
@@ -33,16 +33,17 @@ import quip
 
 client = quip.QuipClient(access_token="Wk9EQU1BcDZFS04=|1483091850|CF037JVoITJPnAET8aHWnZwEZACvrIm7jtkRIQCaX3g=")
 AHA_BC = client.get_folder("PCeAOAQx6sO") # folder AHA BC
-theID = ""
+docID = ""
 for td in AHA_BC['children'] :
     if 'thread_id' in td :
-        theID = td['thread_id'] #find a doc
+        docID = td['thread_id'] #find a doc
         break
-thread = client.get_thread(id=theID)
+thread = client.get_thread(id=docID)
 '''
 client = quip.QuipClient(access_token="Wk9EQU1BcDZFS04=|1483091850|CF037JVoITJPnAET8aHWnZwEZACvrIm7jtkRIQCaX3g=")
-docURL = "Z0R5AhbLjUxu" # test doc 0309-c
-thread = client.get_thread(id=theURL)
+#docURL = "Z0R5AhbLjUxu" # test doc 0309-c
+docURL = "YHb8AyYLNgvi" # test doc 0309-cc
+thread = client.get_thread(id=docURL)
 docID = thread['thread']['id']
 '''
 '''
@@ -52,6 +53,7 @@ extract SWordCount and pseudoID
 from HTMLParser import HTMLParser
 import re
 
+if thread["html"].find(r'<i>//')!=-1 : return 0
 docHTML = thread["html"].decode('utf-8').encode('ascii', 'ignore') #clear all non-ascii
 docHTML = re.sub(r'<h1.+<\/h1>', '', docHTML, count=1) #delete the header
 '''SET'''
@@ -69,7 +71,7 @@ class MyHTMLParser(HTMLParser):
         HTMLParser.__init__(self)
         self.__BNNow = -1
         self.__SNNow = 0
-        self.__newline = 0 #when there are total two <p> and <br/>, new section
+        self.__newline = 0 #when there are total two <p> and <br/> between two data, new section
         self.__SIDNow = ''
         self.SWordCount = []
         self.SID = []
@@ -103,6 +105,7 @@ parser.feed(docHTML)
 
 SWordCount = parser.SWordCount
 SID = parser.SID
+SNperB = [ len(b) for b in SWordCount ]     # B[SN]
 
 '''
 ====================SETTINGS====================
@@ -114,14 +117,12 @@ Host = ["Edward", "Katherine", "Sissy", "Harry"]
 random.shuffle(Host)
 HostN = len(Host)
 HostWordCount = [0.00] * HostN
+Ans_HostWordCountSTD = 1000.00
 
 #                  Greet   History   World  Fun   AHA
 '''SET'''
 BWeight = (1.00,   1.30,    1.50,  1.20, 1.00)  # B[]
-SNperB = [ len(b) for b in SWordCount ]     # B[SN]
-for b in xrange(BN) :
-    for s in xrange(SNperB[b]) :
-        SWordCount[b][s] *= BWeight[b]      # B[S[]]
+SWordCount = [ [ swc*BWeight[b] for swc in SWordCount[b] ] for b in xrange(BN) ]     # B[S[]]
 
 '''SET'''
 PNperB =  (   1,      1,       2,     1,    3)  # B[PN]
@@ -135,7 +136,6 @@ for i in xrange(BN) :
 Ans_CutSign = []
 Ans_PAssign = []
 #Ans_Continuity = 0
-Ans_HostWordCountSTD = 1000.00
 CutSign[0][0] = 0
 '''
 ====================DISTRIBUTE(S->P)====================
@@ -212,7 +212,7 @@ import traceback
 try:
     for b in xrange(BN) :
         for p in xrange(PNperB[b]) :
-            client.edit_document(thread_id=theID, content=r"<i>//%s</i>" % (Host[Ans_PAssign[b][p]]), format="html", operation=client.BEFORE_SECTION, section_id=SID[b][Ans_CutSign[b][p]])
+            client.edit_document(thread_id=docID, content=r"<i>//%s</i>" % (Host[Ans_PAssign[b][p]]), format="html", operation=client.BEFORE_SECTION, section_id=SID[b][Ans_CutSign[b][p]])
 except:
     out = open('Assign_error.txt','w')
     out.write(traceback.format_exc())
