@@ -8,6 +8,7 @@ app.config['DEBUG'] = True
 
 @app.route('/')
 def cdoc():
+    '''
     import time
     import datetime
     import traceback
@@ -24,6 +25,7 @@ def cdoc():
 
     client = quip.QuipClient(access_token="Wk9EQU1BcDZFS04=|1483091850|CF037JVoITJPnAET8aHWnZwEZACvrIm7jtkRIQCaX3g=")
     client.new_document(content=ctx, format="html", title=NextWednesdayN, member_ids=["LHEAOAhm7YS"])
+    '''
     return 'Done!'
 
 
