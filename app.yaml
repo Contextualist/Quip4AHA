@@ -4,4 +4,4 @@ threadsafe: yes
 
 handlers:
 - url: .*
-  script: test.py
+  script: test.app
