@@ -1,4 +1,5 @@
-import AssignHost
+from NewDoc import NewDoc
+from AssignHost import AssignHost
 
 from flask import Flask
 app = Flask(__name__)
@@ -9,10 +10,14 @@ app.config['DEBUG'] = True
 
 
 @app.route('/')
-def assign_do():
-    s = AssignHost.do()
-    return 'Done!%s' % (s)
+def assign():
+    AssignAction = AssignHost()
+    return AssignAction.do()
 
+@app.route('/newdoc')
+def newdoc():
+    NewDocAction = NewDoc()
+    return NewDocAction.do()
 
 @app.errorhandler(404)
 def page_not_found(e):
