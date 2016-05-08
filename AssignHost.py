@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-  
 '''
 Adapt to fit Flask in GAE
-
 CAUTION: Make sure there is only ONE doc in the AHA BC folder,
          otherwise the doc catcher may catch a wrong one.
 NOTICE:  To update the broadcast structure, you need to update
@@ -23,8 +22,6 @@ For those who are new to Python, remember,
 Progress: Hope to improve efficiency of DISTRIBUTE
 '''
 
-import quip
-
 from HTMLParser import HTMLParser
 import re
 
@@ -39,175 +36,188 @@ class MyHTMLParser(HTMLParser):
         self.SID = []
 
     def handle_starttag(self, tag, attrs):
-        if tag == "p" :
+        if tag == "p":
             self.__SIDNow = attrs[0][1] #extract the ID attr
             self.__newline += 1
 
     def handle_startendtag(self, tag, attrs):
-        if tag == "br" :
+        if tag == "br":
             self.__newline += 1
 
     def handle_data(self, data):
         wordcount = len(re.findall(r"\b\w+\b", data))
-        if wordcount == 0 : return 0
-        if (self.__BNNow+1<=BN-1 and data.find(KeyWord[self.__BNNow+1])!=-1) :
+        if wordcount == 0: return 0
+        if (self.__BNNow+1<=BN-1 and data.find(KeyWord[self.__BNNow+1])!=-1):
             self.__BNNow += 1 #new block
             self.__SNNow = 0
             self.SWordCount += [[0]]
             self.SID += [[self.__SIDNow]]
-        elif self.__newline>=2 :
+        elif self.__newline>=2:
             self.__SNNow += 1 #new section
             self.SWordCount[self.__BNNow] += [0]
             self.SID[self.__BNNow] += [self.__SIDNow]
         self.SWordCount[self.__BNNow][self.__SNNow] += wordcount
         self.__newline = 0
 
+import quip
 import copy
 
-def std(d):
-    m = 0.00
-    for x in d : m += x
-    m = m / len(d)
-    s = 0.00
-    for x in d : s += ( x - m ) ** 2
-    return (s / len(d)) ** 0.5
+class AssignHost(object):
 
-def AssignP(b, p) :
-    global HostN, PAssign, BN, PNperB, PWordCount, HostWordCount
-    global Ans_PAssign, IsBetterPDivision, Ans_HostWordCountSTD
-    op = range(HostN)
-    if p == 0 : #forbid the host to cross a block
-        op = range(PAssign[b-1][PNperB[b-1]-1])+range(PAssign[b-1][PNperB[b-1]-1]+1,HostN)
-    for i in op:
-        PAssign[b][p] = i
-        HostWordCount[i] += PWordCount[b][p]
-        #if (p!=0)&&(i!=PAssign[b][p-1]) : Continuity += 1
-        if p == PNperB[b]-1 :
-            if b == BN-1 :
-                t = std(HostWordCount)
-                if t < Ans_HostWordCountSTD :
-                    Ans_HostWordCountSTD = t
-                    Ans_PAssign = copy.deepcopy(PAssign)
-                    IsBetterPDivision = 1
+    def __init__(self):
+        '''
+        ==================INITIALIATION==================
+        '''
+        #--------------------Block----------------------
+        '''SET'''
+        self.KeyWord = ("Good Morning AHA",
+                        "Now for this week in history",
+                        "In World News",
+                        "Now for the fun facts",
+                        "In AHA News")
+        self.BN = len(self.KeyWord)
+        #                  Greet   History   World  Fun   AHA
+        '''SET'''
+        self.BWeight = (1.00,   1.30,    1.50,  1.20, 1.00)  # B[]
+        #--------------------Section----------------------
+        self.SWordCount = []
+        self.SID = []
+        self.SNperB = []     # B[SN]
+        #---------------------Host----------------------
+        '''SET'''
+        self.Host = ["Edward", "Katherine", "Sissy", "Harry"]
+        import random
+        random.shuffle(self.Host)
+        self.HostN = len(self.Host)
+        self.HostWordCount = [0.00] * self.HostN
+        self.Ans_HostWordCountSTD = 1000.00
+        #--------------------Portion----------------------
+        '''SET'''
+        self.PNperB =  (   1,      1,       2,     1,    3)  # B[PN]
+        self.CutSign = [ [0]*pn for pn in self.PNperB ]
+        self.PWordCount = [ [0]*pn for pn in self.PNperB ]
+        self.PAssign = [ [0]*pn for pn in self.PNperB ]
+        self.IsBetterPDivision = 0
+        #self.Continuity = 0
+        for i in xrange(self.BN) :
+            if self.PNperB[i] > self.SNperB[i]: self.PNperB[i] = self.SNperB[i]
+        self.Ans_CutSign = []
+        self.Ans_PAssign = []
+        #self.Ans_Continuity = 0
+        #----------------------DOC----------------------
+        self.client = quip.QuipClient(access_token="Wk9EQU1BcDZFS04=|1483091850|CF037JVoITJPnAET8aHWnZwEZACvrIm7jtkRIQCaX3g=")
+        self.FolderID = "PCeAOAQx6sO" # folder AHA BC
+        '''
+        ====================DOC CATCHER====================
+        '''
+        '''
+        AHA_BC = self.client.get_folder(self.FolderID)
+        self.docID = ""
+        for td in AHA_BC['children'] :
+            if 'thread_id' in td :
+                self.docID = td['thread_id'] #find a doc
+                break
+        self.thread = self.client.get_thread(id=self.docID)
+        '''
+        #self.docURL = "Z0R5AhbLjUxu" # test doc 0309-c
+        docURL = "YHb8AyYLNgvi" # test doc 0309-cc
+        self.thread = self.client.get_thread(id=docURL)
+        self.docID = self.thread['thread']['id']
+        
+
+    def _std(d):
+        m = 0.00
+        for x in d : m += x
+        m = m / len(d)
+        s = 0.00
+        for x in d : s += ( x - m ) ** 2
+        return (s / len(d)) ** 0.5
+
+    def _AssignP(b, p) :
+        op = range(HostN)
+        if p == 0 : #forbid the host to cross a block
+            op = range(PAssign[b-1][PNperB[b-1]-1])+range(PAssign[b-1][PNperB[b-1]-1]+1,HostN)
+        for i in op:
+            PAssign[b][p] = i
+            HostWordCount[i] += PWordCount[b][p]
+            #if (p!=0)&&(i!=PAssign[b][p-1]) : Continuity += 1
+            if p == PNperB[b]-1 :
+                if b == BN-1 :
+                    t = self._std(HostWordCount)
+                    if t < Ans_HostWordCountSTD :
+                        Ans_HostWordCountSTD = t
+                        Ans_PAssign = copy.deepcopy(PAssign)
+                        IsBetterPDivision = 1
+                else :
+                    AssignP(b+1,0)
             else :
-                AssignP(b+1,0)
+                AssignP(b,p+1)
+            HostWordCount[i] -= PWordCount[b][p]
+
+    def _GenerateP(b, p) : #block 'b' from 'CutSign[b,p]+1' to the end start dividing the 'p'th sections
+        if p == PNperB[b]-1 :
+            PWordCount[b][PNperB[b]-1] = sum(SWordCount[b][CutSign[b][p]:])
+            if b < BN-1 :
+                CutSign[b+1][0] = 0
+                self._GenerateP(b+1,0)   #next B
+            else :
+                IsBetterPDivision = 0
+                HostWordCount = [0] * HostN
+                PAssign[0][0] = 0
+                HostWordCount[0] += PWordCount[0][0]
+                if PNperB[0]>1 :
+                    self._AssignP(0, 1)
+                else : 
+                    self._AssignP(1, 0) #start assigning hosts
+                if IsBetterPDivision : 
+                    Ans_CutSign = copy.deepcopy(CutSign)
         else :
-            AssignP(b,p+1)
-        HostWordCount[i] -= PWordCount[b][p]
-
-def GenerateP(b, p) : #block 'b' from 'CutSign[b,p]+1' to the end start dividing the 'p'th sections
-    global PNperB, SNoerB, BN, CutSign, PWordCount, SWordCount, HostWordCount, HostN, PAssign
-    global IsBetterPDivision, Ans_CutSign
-    if p == PNperB[b]-1 :
-        PWordCount[b][PNperB[b]-1] = sum(SWordCount[b][CutSign[b][p]:])
-        if b < BN-1 :
-            CutSign[b+1][0] = 0
-            GenerateP(b+1,0)   #next B
-        else :
-            IsBetterPDivision = 0
-            HostWordCount = [0] * HostN
-            PAssign[0][0] = 0
-            HostWordCount[0] += PWordCount[0][0]
-            if PNperB[0]>1 :
-                AssignP(0, 1)
-            else : 
-                AssignP(1, 0) #start assigning hosts
-            if IsBetterPDivision : 
-                Ans_CutSign = copy.deepcopy(CutSign)
-    else :
-        PWordCount[b][p] = 0
-        for i in xrange(CutSign[b][p]+1,SNperB[b]) :
-            PWordCount[b][p] += SWordCount[b][i-1]
-            CutSign[b][p+1] = i
-            GenerateP(b,p+1)
+            PWordCount[b][p] = 0
+            for i in xrange(CutSign[b][p]+1,SNperB[b]) :
+                PWordCount[b][p] += SWordCount[b][i-1]
+                CutSign[b][p+1] = i
+                self._GenerateP(b,p+1)
 
 
-def do():
-    return "Underconstruction. . ."
-    '''
-    ====================DOC CATCHER====================
-    '''
-    client = quip.QuipClient(access_token="Wk9EQU1BcDZFS04=|1483091850|CF037JVoITJPnAET8aHWnZwEZACvrIm7jtkRIQCaX3g=")
-    AHA_BC = client.get_folder("PCeAOAQx6sO") # folder AHA BC
-    docID = ""
-    for td in AHA_BC['children'] :
-        if 'thread_id' in td :
-            docID = td['thread_id'] #find a doc
-            break
-    thread = client.get_thread(id=docID)
-    '''
-    client = quip.QuipClient(access_token="Wk9EQU1BcDZFS04=|1483091850|CF037JVoITJPnAET8aHWnZwEZACvrIm7jtkRIQCaX3g=")
-    #docURL = "Z0R5AhbLjUxu" # test doc 0309-c
-    docURL = "YHb8AyYLNgvi" # test doc 0309-cc
-    thread = client.get_thread(id=docURL)
-    docID = thread['thread']['id']
-    '''
-    
-    '''
-    ====================DOC PRE-PROCESSOR====================
-    extract SWordCount and SID
-    '''
-    if thread["html"].find(r'<i>//')!=-1 : return "You have run this at least once!"
-    docHTML = thread["html"].decode('utf-8').encode('ascii', 'ignore') #clear all non-ascii
-    docHTML = re.sub(r'<h1.+<\/h1>', '', docHTML, count=1) #delete the header
-    '''SET'''
-    KeyWord = ("Good Morning AHA",
-            "Now for this week in history",
-            "In World News",
-            "Now for the fun facts",
-            "In AHA News")
-    BN = len(KeyWord)
-    parser = MyHTMLParser()
-    parser.feed(docHTML)
-
-    SWordCount = parser.SWordCount
-    SID = parser.SID
-    SNperB = [ len(b) for b in SWordCount ]     # B[SN]
-    
-    '''
-    ====================SETTINGS====================
-    '''
-    import random
-
-    '''SET'''
-    Host = ["Edward", "Katherine", "Sissy", "Harry"]
-    random.shuffle(Host)
-    HostN = len(Host)
-    HostWordCount = [0.00] * HostN
-    Ans_HostWordCountSTD = 1000.00
-
-    #                  Greet   History   World  Fun   AHA
-    '''SET'''
-    BWeight = (1.00,   1.30,    1.50,  1.20, 1.00)  # B[]
-    SWordCount = [ [ swc*BWeight[b] for swc in SWordCount[b] ] for b in xrange(BN) ]     # B[S[]]
-
-    '''SET'''
-    PNperB =  (   1,      1,       2,     1,    3)  # B[PN]
-    CutSign = [ [0]*pn for pn in PNperB ]
-    PWordCount = [ [0]*pn for pn in PNperB ]
-    PAssign = [ [0]*pn for pn in PNperB ]
-    IsBetterPDivision = 0
-    #Continuity = 0
-    for i in xrange(BN) :
-        if PNperB[i] > SNperB[i] : PNperB[i] = SNperB[i]
-    Ans_CutSign = []
-    Ans_PAssign = []
-    #Ans_Continuity = 0
-    CutSign[0][0] = 0
-    
-    '''
-    ====================DISTRIBUTE(S->P)====================
-    '''
-    GenerateP(0, 0)
-    #    CutSign =   [[0],   [0],     [],       , []] # B[P[SN]] generated first
-    #    PWordCount =[ ,      ,   [],       , []] # B[P[]] generated first
-    #        PAssign =   [[0],   [1],     [],       , []] # B[P[Host]] subsequent
-    
-    '''
-    ====================POST DIVISIONS====================
-    '''
-    for b in xrange(BN) :
-        for p in xrange(PNperB[b]) :
-            client.edit_document(thread_id=docID, content=r"<i>//%s</i>" % (Host[Ans_PAssign[b][p]]), format="html",
-                                 operation=client.BEFORE_SECTION, section_id=SID[b][Ans_CutSign[b][p]])
-    return "Done!"
+    def do():
+        return "Underconstruction. . ."
+        '''
+        ====================DOC PRE-PROCESSOR====================
+        extract SWordCount and SID
+        '''
+        if self.thread["html"].find(r'<i>//')!=-1 : return "You have run this at least once!"
+        self.docHTML = self.thread["html"].decode('utf-8').encode('ascii', 'ignore') #clear all non-ascii
+        self.docHTML = re.sub(r'<h1.+<\/h1>', '', self.docHTML, count=1) #delete the header
+        
+        parser = MyHTMLParser()
+        parser.feed(self.docHTML)
+        
+        '''
+        =====================SETTINGS====================
+        '''    
+        self.SWordCount = parser.SWordCount
+        self.SWordCount = [ [ swc*self.BWeight[b] for swc in self.SWordCount[b] ] for b in xrange(self.BN) ]     # B[S[]], weighted
+        self.SID = parser.SID
+        self.SNperB = [ len(b) for b in SWordCount ]     # B[SN]
+        self.CutSign[0][0] = 0
+        
+        '''
+        ====================DISTRIBUTE(S->P)====================
+        '''
+        self._GenerateP(0, 0)
+        #    CutSign =   [[0],   [0],     [],       , []] # B[P[SN]] generated first
+        #    PWordCount =[ ,      ,   [],       , []] # B[P[]] generated first
+        #        PAssign =   [[0],   [1],     [],       , []] # B[P[Host]] subsequent
+        
+        '''
+        ====================POST DIVISIONS====================
+        '''
+        for b in xrange(self.BN) :
+            for p in xrange(self.PNperB[b]) :
+                client.edit_document(thread_id=self.docID, content=r"<i>//%s</i>" % (self.Host[self.Ans_PAssign[b][p]]), format="html",
+                                     operation=self.client.BEFORE_SECTION, section_id=self.SID[b][self.Ans_CutSign[b][p]])
+        return "Done!"
+        
+if __name__=="__main__":
+    NewDocAction = NewDoc()
+    NewDocAction.do()
