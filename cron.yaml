@@ -1,0 +1,5 @@
+cron:
+- description: "NewDoc every Friday"
+  url: /newdoc
+  schedule: every friday 16:10
+  timezone: Asia/Hong_Kong
