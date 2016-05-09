@@ -26,8 +26,10 @@ from HTMLParser import HTMLParser
 import re
 
 class MyHTMLParser(HTMLParser):
-    def __init__(self):
+    def __init__(self, KeyWord, BN):
         HTMLParser.__init__(self)
+        self.__KeyWord = KeyWord
+        self.__BN = BN
         self.__BNNow = -1
         self.__SNNow = 0
         self.__newline = 0 #when there are total two <p> and <br/> between two data, new section
@@ -47,7 +49,7 @@ class MyHTMLParser(HTMLParser):
     def handle_data(self, data):
         wordcount = len(re.findall(r"\b\w+\b", data))
         if wordcount == 0: return 0
-        if (self.__BNNow+1<=BN-1 and data.find(KeyWord[self.__BNNow+1])!=-1):
+        if (self.__BNNow+1<=self.__BN-1 and data.find(self.__KeyWord[self.__BNNow+1])!=-1):
             self.__BNNow += 1 #new block
             self.__SNNow = 0
             self.SWordCount += [[0]]
@@ -99,8 +101,6 @@ class AssignHost(object):
         self.PAssign = [ [0]*pn for pn in self.PNperB ]
         self.IsBetterPDivision = 0
         #self.Continuity = 0
-        for i in xrange(self.BN) :
-            if self.PNperB[i] > self.SNperB[i]: self.PNperB[i] = self.SNperB[i]
         self.Ans_CutSign = []
         self.Ans_PAssign = []
         #self.Ans_Continuity = 0
@@ -110,11 +110,11 @@ class AssignHost(object):
         '''
         ====================DOC CATCHER====================
         '''
-        '''
+        
         AHA_BC = self.client.get_folder(self.FolderID)
         self.docID = ""
-        for td in AHA_BC['children'] :
-            if 'thread_id' in td :
+        for td in AHA_BC['children']:
+            if 'thread_id' in td:
                 self.docID = td['thread_id'] #find a doc
                 break
         self.thread = self.client.get_thread(id=self.docID)
@@ -123,73 +123,73 @@ class AssignHost(object):
         docURL = "YHb8AyYLNgvi" # test doc 0309-cc
         self.thread = self.client.get_thread(id=docURL)
         self.docID = self.thread['thread']['id']
-        
+        '''
 
-    def _std(d):
+    def _std(self, d):
         m = 0.00
-        for x in d : m += x
+        for x in d: m += x
         m = m / len(d)
         s = 0.00
-        for x in d : s += ( x - m ) ** 2
+        for x in d: s += ( x - m ) ** 2
         return (s / len(d)) ** 0.5
 
-    def _AssignP(b, p) :
-        op = range(HostN)
-        if p == 0 : #forbid the host to cross a block
-            op = range(PAssign[b-1][PNperB[b-1]-1])+range(PAssign[b-1][PNperB[b-1]-1]+1,HostN)
+    def _AssignP(self, b, p):
+        op = range(self.HostN)
+        if p == 0: #forbid the host to cross a block
+            op = range(self.PAssign[b-1][self.PNperB[b-1]-1])+range(self.PAssign[b-1][self.PNperB[b-1]-1]+1,self.HostN)
         for i in op:
-            PAssign[b][p] = i
-            HostWordCount[i] += PWordCount[b][p]
-            #if (p!=0)&&(i!=PAssign[b][p-1]) : Continuity += 1
-            if p == PNperB[b]-1 :
-                if b == BN-1 :
-                    t = self._std(HostWordCount)
-                    if t < Ans_HostWordCountSTD :
-                        Ans_HostWordCountSTD = t
-                        Ans_PAssign = copy.deepcopy(PAssign)
-                        IsBetterPDivision = 1
-                else :
-                    AssignP(b+1,0)
-            else :
-                AssignP(b,p+1)
-            HostWordCount[i] -= PWordCount[b][p]
+            self.PAssign[b][p] = i
+            self.HostWordCount[i] += self.PWordCount[b][p]
+            #if (p!=0)&&(i!=self.PAssign[b][p-1]): self.Continuity += 1
+            if p == self.PNperB[b]-1:
+                if b == self.BN-1:
+                    t = self._std(self.HostWordCount)
+                    if t < self.Ans_HostWordCountSTD:
+                        self.Ans_HostWordCountSTD = t
+                        self.Ans_PAssign = copy.deepcopy(self.PAssign)
+                        self.IsBetterPDivision = 1
+                else:
+                    self._AssignP(b+1,0)
+            else:
+                self._AssignP(b,p+1)
+            self.HostWordCount[i] -= self.PWordCount[b][p]
 
-    def _GenerateP(b, p) : #block 'b' from 'CutSign[b,p]+1' to the end start dividing the 'p'th sections
-        if p == PNperB[b]-1 :
-            PWordCount[b][PNperB[b]-1] = sum(SWordCount[b][CutSign[b][p]:])
-            if b < BN-1 :
-                CutSign[b+1][0] = 0
+    def _GenerateP(self, b, p): #block 'b' from 'CutSign[b,p]+1' to the end start dividing the 'p'th sections
+        if p == self.PNperB[b]-1:
+            self.PWordCount[b][self.PNperB[b]-1] = sum(self.SWordCount[b][self.CutSign[b][p]:])
+            if b < self.BN-1:
+                self.CutSign[b+1][0] = 0
                 self._GenerateP(b+1,0)   #next B
-            else :
-                IsBetterPDivision = 0
-                HostWordCount = [0] * HostN
-                PAssign[0][0] = 0
-                HostWordCount[0] += PWordCount[0][0]
-                if PNperB[0]>1 :
+            else:
+                self.IsBetterPDivision = 0
+                self.HostWordCount = [0] * self.HostN
+                self.PAssign[0][0] = 0
+                self.HostWordCount[0] += self.PWordCount[0][0]
+                if self.PNperB[0]>1:
                     self._AssignP(0, 1)
-                else : 
+                else: 
                     self._AssignP(1, 0) #start assigning hosts
-                if IsBetterPDivision : 
-                    Ans_CutSign = copy.deepcopy(CutSign)
-        else :
-            PWordCount[b][p] = 0
-            for i in xrange(CutSign[b][p]+1,SNperB[b]) :
-                PWordCount[b][p] += SWordCount[b][i-1]
-                CutSign[b][p+1] = i
+                if self.IsBetterPDivision: 
+                    self.Ans_CutSign = copy.deepcopy(self.CutSign)
+        else:
+            self.PWordCount[b][p] = 0
+            for i in xrange(self.CutSign[b][p]+1,self.SNperB[b]):
+                self.PWordCount[b][p] += self.SWordCount[b][i-1]
+                self.CutSign[b][p+1] = i
                 self._GenerateP(b,p+1)
 
 
-    def do():
-        return "Underconstruction. . ."
+    def do(self):
+        #return "Underconstruction. . ."
         '''
         ====================DOC PRE-PROCESSOR====================
         extract SWordCount and SID
         '''
-        if self.thread["html"].find(r'<i>//')!=-1 : return "You have run this at least once!"
+        if self.thread["html"].find(r'<i>//')!=-1: return "You have run this at least once!"
         self.docHTML = self.thread["html"].decode('utf-8').encode('ascii', 'ignore') #clear all non-ascii
         self.docHTML = re.sub(r'<h1.+<\/h1>', '', self.docHTML, count=1) #delete the header
         
-        parser = MyHTMLParser()
+        parser = MyHTMLParser(self.KeyWord, self.BN)
         parser.feed(self.docHTML)
         
         '''
@@ -198,7 +198,9 @@ class AssignHost(object):
         self.SWordCount = parser.SWordCount
         self.SWordCount = [ [ swc*self.BWeight[b] for swc in self.SWordCount[b] ] for b in xrange(self.BN) ]     # B[S[]], weighted
         self.SID = parser.SID
-        self.SNperB = [ len(b) for b in SWordCount ]     # B[SN]
+        self.SNperB = [ len(b) for b in self.SWordCount ]     # B[SN]
+        for i in xrange(self.BN):
+            if self.PNperB[i] > self.SNperB[i]: self.PNperB[i] = self.SNperB[i]
         self.CutSign[0][0] = 0
         
         '''
@@ -212,12 +214,12 @@ class AssignHost(object):
         '''
         ====================POST DIVISIONS====================
         '''
-        for b in xrange(self.BN) :
-            for p in xrange(self.PNperB[b]) :
-                client.edit_document(thread_id=self.docID, content=r"<i>//%s</i>" % (self.Host[self.Ans_PAssign[b][p]]), format="html",
+        for b in xrange(self.BN):
+            for p in xrange(self.PNperB[b]):
+                self.client.edit_document(thread_id=self.docID, content=r"<i>//%s</i>" % (self.Host[self.Ans_PAssign[b][p]]), format="html",
                                      operation=self.client.BEFORE_SECTION, section_id=self.SID[b][self.Ans_CutSign[b][p]])
         return "Done!"
         
 if __name__=="__main__":
-    NewDocAction = NewDoc()
-    NewDocAction.do()
+    AssignAction = AssignHost()
+    AssignAction.do()
