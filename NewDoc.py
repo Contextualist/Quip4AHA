@@ -29,10 +29,14 @@ class NewDoc(object):
         <p class='line'>&#8203;</p>
         <p class='line'>This is all for today AHA broadcasting thank you for listening, and as always stay classy AHA!</p>
         """ % (self.NextWednesdayS) # &#8203; (or &#x200b;) stands for a place-holder for a blank <p>
-        self.FolderID = "LHEAOAhm7YS" # my desktop
-        #self.FolderID = "PCeAOAQx6sO" # AHA BC
+        #self.FolderID = "LHEAOAhm7YS" # my desktop
+        self.FolderID = "PCeAOAQx6sO" # AHA BC
         self.client = quip.QuipClient(access_token="Wk9EQU1BcDZFS04=|1483091850|CF037JVoITJPnAET8aHWnZwEZACvrIm7jtkRIQCaX3g=")
 
     def do(self):
         self.client.new_document(content=self.ctx, format="html", title=self.NextWednesdayN, member_ids=[self.FolderID])
         return "Done!"
+
+if __name__=="__main__":
+    NewDocAction = NewDoc()
+    NewDocAction.do()
