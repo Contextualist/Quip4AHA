@@ -110,7 +110,6 @@ class AssignHost(object):
         '''
         ====================DOC CATCHER====================
         '''
-        
         AHA_BC = self.client.get_folder(self.FolderID)
         self.docID = ""
         for td in AHA_BC['children']:
@@ -119,7 +118,7 @@ class AssignHost(object):
                 break
         self.thread = self.client.get_thread(id=self.docID)
         '''
-        #self.docURL = "Z0R5AhbLjUxu" # test doc 0309-c
+        #docURL = "Z0R5AhbLjUxu" # test doc 0309-c
         docURL = "YHb8AyYLNgvi" # test doc 0309-cc
         self.thread = self.client.get_thread(id=docURL)
         self.docID = self.thread['thread']['id']
@@ -136,7 +135,7 @@ class AssignHost(object):
     def _AssignP(self, b, p):
         op = range(self.HostN)
         if p == 0: #forbid the host to cross a block
-            op = range(self.PAssign[b-1][self.PNperB[b-1]-1])+range(self.PAssign[b-1][self.PNperB[b-1]-1]+1,self.HostN)
+            del op[self.PAssign[b-1][self.PNperB[b-1]-1]]
         for i in op:
             self.PAssign[b][p] = i
             self.HostWordCount[i] += self.PWordCount[b][p]
@@ -216,8 +215,9 @@ class AssignHost(object):
         '''
         for b in xrange(self.BN):
             for p in xrange(self.PNperB[b]):
-                self.client.edit_document(thread_id=self.docID, content=r"<i>//%s</i>" % (self.Host[self.Ans_PAssign[b][p]]), format="html",
-                                     operation=self.client.BEFORE_SECTION, section_id=self.SID[b][self.Ans_CutSign[b][p]])
+                if (p==0 or self.Ans_PAssign[b][p]!=self.Ans_PAssign[b][p-1]): #need not to care about cross block
+                    self.client.edit_document(thread_id=self.docID, content=r"<i>//%s</i>" % (self.Host[self.Ans_PAssign[b][p]]), format="html",
+                                         operation=self.client.BEFORE_SECTION, section_id=self.SID[b][self.Ans_CutSign[b][p]])
         return "Done!"
         
 if __name__=="__main__":
