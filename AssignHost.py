@@ -66,36 +66,35 @@ import copy
 
 class AssignHost(object):
 
-    def __init__(self):
+    def __init__(self,
+                 KeyWord=("Good Morning AHA",
+                          "Now for this week in history",
+                          "In World News",
+                          "Now for the fun facts",
+                          "In AHA News"),
+                 BWeight=(1.00, 1.30, 1.50, 1.20, 1.00),
+                 Host=["Edward", "Katherine", "Sissy", "Harry"],
+                 PNperB=(1, 1, 2, 1, 3)):
         '''
         ==================INITIALIATION==================
         '''
         #--------------------Block----------------------
-        '''SET'''
-        self.KeyWord = ("Good Morning AHA",
-                        "Now for this week in history",
-                        "In World News",
-                        "Now for the fun facts",
-                        "In AHA News")
+        self.KeyWord = KeyWord
         self.BN = len(self.KeyWord)
-        #                  Greet   History   World  Fun   AHA
-        '''SET'''
-        self.BWeight = (1.00,   1.30,    1.50,  1.20, 1.00)  # B[]
+        self.BWeight = BWeight # B[]
         #--------------------Section----------------------
         self.SWordCount = []
         self.SID = []
         self.SNperB = []     # B[SN]
         #---------------------Host----------------------
-        '''SET'''
-        self.Host = ["Edward", "Katherine", "Sissy", "Harry"]
+        self.Host = Host
         import random
         random.shuffle(self.Host)
         self.HostN = len(self.Host)
         self.HostWordCount = [0.00] * self.HostN
         self.Ans_HostWordCountSTD = 1000.00
         #--------------------Portion----------------------
-        '''SET'''
-        self.PNperB =  (   1,      1,       2,     1,    3)  # B[PN]
+        self.PNperB = PNperB # B[PN]
         self.CutSign = [ [0]*pn for pn in self.PNperB ]
         self.PWordCount = [ [0]*pn for pn in self.PNperB ]
         self.PAssign = [ [0]*pn for pn in self.PNperB ]
