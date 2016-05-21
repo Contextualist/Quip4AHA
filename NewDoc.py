@@ -1,5 +1,5 @@
 import datetime
-import quip
+import quip4aha
 
 class NewDoc(object):
 
@@ -28,12 +28,10 @@ class NewDoc(object):
         <p class='line'>&#8203;</p>
         <p class='line'>That is all for today's AHA broadcasting. Thank you for listening, and as always stay classy AHA!</p>
         """ % (self.NextWednesdayS) # &#8203; (or &#x200b;) stands for a place-holder for a blank <p>
-        #self.FolderID = "LHEAOAhm7YS" # my desktop
-        self.FolderID = "PCeAOAQx6sO" # AHA BC
-        self.client = quip.QuipClient(access_token="Wk9EQU1BcDZFS04=|1483091850|CF037JVoITJPnAET8aHWnZwEZACvrIm7jtkRIQCaX3g=")
+        self.client = quip4aha.QuipClient4AHA()
 
     def do(self):
-        self.client.new_document(content=self.ctx, format="html", title=self.NextWednesdayN, member_ids=[self.FolderID])
+        self.client.new_document(content=self.ctx, format="html", title=self.NextWednesdayN, member_ids=[self.client.AHABC_ID])
         return "Done!"
 
 if __name__=="__main__":
