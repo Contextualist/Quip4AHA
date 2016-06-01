@@ -6,6 +6,6 @@ Develop upon [Python Flask Skeleton for Google App Engine](https://cloud.google.
 ### Include:
 | Script | Call | Cron(UTC+08:00) | Description |
 | ------ | ---- | --------------- | ----------- |
-| [AssignHost.py](\AssignHost.py) | / | | divides the doc into parts and assigns them to the host evenly. |
-| [NewDoc.py](\NewDoc.py) | /newdoc | every Friday 16:10 | creates the doc for the broadcast next week. |
-| [UpdateWeather](\UpdateWeather.py) | /updateweather | every Wednesday 07:27 | updates "weather for today" in the doc. |
+| [AssignHost.py](\AssignHost.py) | / | | Divides the doc into parts and assigns them to the host evenly. |
+| [NewDoc.py](\NewDoc.py) | /newdoc | every Friday 16:10 | Creates the doc for the broadcast next week. |
+| [UpdateWeather.py](\UpdateWeather.py) | /updateweather | every Sunday 07:27;<br/>every Wednesday 07:27 | Updates "weather for today" in the doc. |
