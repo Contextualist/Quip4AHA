@@ -1,13 +1,13 @@
-import datetime
 import re
 import json
 import urllib2
-import quip4aha
+from quip4aha import QuipClient4AHA, week, InvalidOperation
 
 class UpdateWeather(object):
 
-    SIMP = {'Mostly Cloudy':'mostly cloudy', 'Partly Cloudy':'partly cloudy', 'Overcast':'cloudy',
-            'Thunderstorm':'rainy', 'Rain':'rainy'}
+    SIMP = {'Clear':'sunny',
+            'Mostly Cloudy':'mostly cloudy', 'Partly Cloudy':'partly cloudy', 'Overcast':'cloudy',
+            'Thunderstorm':'rainy', 'Chance of a Thunderstorm':'rainy', 'Rain':'rainy'}
     
     def __init__(self):
         self.NextNDay = 0
@@ -15,16 +15,16 @@ class UpdateWeather(object):
         self.RainPercentage = ''
         self.TemperatureC = ''
         self.TemperatureF = ''
-        self.client = quip4aha.QuipClient4AHA()
+        self.client = QuipClient4AHA()
         
     def do(self):
         '''
         ==================FORECAST DATA==================
         '''
-        self.NextNDay = (10 - int(datetime.datetime.today().strftime('%w'))) % 7 # days to Wednesday
+        self.NextNDay = week.DaysTo('next Wednesday')
         if self.NextNDay > 3:
-            return ("[Error]Cannot get the weather for Wednesday: "
-                    "WunderStation only gives prediction for today and 3 days ahead.")
+            raise InvalidOperation("Unable to get the weather for Wednesday: "
+                                   "WunderStation only gives prediction for today and 3 days ahead.")
         response = json.loads(urllib2.urlopen(
             "http://api.wunderground.com/api/01702baefa3fbf8e/forecast/q/CN/Guangzhou.json").read())
         data = response['forecast']['simpleforecast']['forecastday'][self.NextNDay]
@@ -37,8 +37,6 @@ class UpdateWeather(object):
         ====================DOC CATCHER====================
         '''
         docID = self.client.get_latest_script_ID()
-        if docID == '':
-            return "[Error]Doc not found: There's no legitimate host script in AHA_BC"
         html = self.client.get_thread(id=docID)['html']
         
         '''
