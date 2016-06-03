@@ -19,9 +19,9 @@ def assign():
     AssignAction = AssignHost()
     return AssignAction.do()
 
-@app.route('/b/<ad_hoc_host>')
-def assign_m(ad_hoc_host):
-    AssignAction = AssignHost(Host=ad_hoc_host.split('+'))
+@app.route('/b/<ad_hoc_hosts>')
+def assign_m(ad_hoc_hosts):
+    AssignAction = AssignHost(Host=ad_hoc_hosts.split('+'))
     return AssignAction.do()
 
 @app.route('/newdoc')
