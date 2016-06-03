@@ -3,3 +3,7 @@ cron:
   url: /newdoc
   schedule: every friday 16:10
   timezone: Asia/Hong_Kong
+- description: "Update Weather"
+  url: /updateweather
+  schedule: every sunday,wednesday 07:27
+  timezone: Asia/Hong_Kong
