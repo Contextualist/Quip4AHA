@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-  
 '''
 Adapt to fit Flask in GAE
-CAUTION: Make sure there is only ONE doc in the AHA BC folder,
-         otherwise the doc catcher may catch a wrong one.
-NOTICE:  To update the broadcast structure, you need to update
-         1) KeyWord, 2) BWeight, 3) PNperB;
-         To update the host list, you need to update
-         1) Host.
+NOTICE:  To update the broadcast structure or host list, go to quip4aha.py.
+
 Main idea: 
   i. group sections into portions
   ii. then distribute the portions to each host, so that
@@ -18,7 +14,8 @@ P_   portion(read by a host)
 _N   number, count
 For those who are new to Python, remember, 
 1. The index of a Python list starts with 0.
-2. Variables in Python are pointers. So to copy a list but not the address of the list, use a=copy.deepcopy(b), instead of a=b.
+2. Variables in Python are pointers. So to copy a list but not the
+   address of the list, use a=copy.deepcopy(b), instead of a=b.
 Progress: Hope to improve efficiency of DISTRIBUTE
 '''
 
@@ -61,20 +58,13 @@ class MyHTMLParser(HTMLParser):
         self.SWordCount[self.__BNNow][self.__SNNow] += wordcount
         self.__newline = 0
 
-import quip
+from quip4aha import QuipClient4AHA, InvalidOperation
 import copy
 
 class AssignHost(object):
 
-    def __init__(self,
-                 KeyWord=("Good Morning AHA",
-                          "Now for this week in history",
-                          "In World News",
-                          "Now for the fun facts",
-                          "In AHA News"),
-                 BWeight=(1.00, 1.30, 1.50, 1.20, 1.00),
-                 Host=["Edward", "Katherine", "Sissy", "Harry"],
-                 PNperB=(1, 1, 2, 1, 3)):
+    def __init__(self, KeyWord=QuipClient4AHA.KEYWORD, BWeight=QuipClient4AHA.B_WEIGHT,
+                 Host=QuipClient4AHA.HOST, PNperB=QuipClient4AHA.PN_PER_B):
         '''
         ==================INITIALIATION==================
         '''
@@ -95,33 +85,16 @@ class AssignHost(object):
         self.Ans_HostWordCountSTD = 1000.00
         #--------------------Portion----------------------
         self.PNperB = PNperB # B[PN]
-        self.CutSign = [ [0]*pn for pn in self.PNperB ]
-        self.PWordCount = [ [0]*pn for pn in self.PNperB ]
-        self.PAssign = [ [0]*pn for pn in self.PNperB ]
+        self.CutSign = [[0]*pn for pn in self.PNperB]
+        self.PWordCount = [[0]*pn for pn in self.PNperB]
+        self.PAssign = [[0]*pn for pn in self.PNperB]
         self.IsBetterPDivision = 0
         #self.Continuity = 0
         self.Ans_CutSign = []
         self.Ans_PAssign = []
         #self.Ans_Continuity = 0
         #----------------------DOC----------------------
-        self.client = quip.QuipClient(access_token="Wk9EQU1BcDZFS04=|1483091850|CF037JVoITJPnAET8aHWnZwEZACvrIm7jtkRIQCaX3g=")
-        self.FolderID = "PCeAOAQx6sO" # folder AHA BC
-        '''
-        ====================DOC CATCHER====================
-        '''
-        AHA_BC = self.client.get_folder(self.FolderID)
-        self.docID = ""
-        for td in AHA_BC['children']:
-            if 'thread_id' in td:
-                self.docID = td['thread_id'] #find a doc
-                break
-        self.thread = self.client.get_thread(id=self.docID)
-        '''
-        #docURL = "Z0R5AhbLjUxu" # test doc 0309-c
-        docURL = "YHb8AyYLNgvi" # test doc 0309-cc
-        self.thread = self.client.get_thread(id=docURL)
-        self.docID = self.thread['thread']['id']
-        '''
+        self.client = QuipClient4AHA()
 
     def _std(self, d):
         m = 0.00
@@ -132,9 +105,9 @@ class AssignHost(object):
         return (s / len(d)) ** 0.5
 
     def _AssignP(self, b, p):
-        op = range(self.HostN)
+        op = set(range(self.HostN))
         if p == 0: #forbid the host to cross a block
-            del op[self.PAssign[b-1][self.PNperB[b-1]-1]]
+            op -= {self.PAssign[b-1][self.PNperB[b-1]-1]}
         for i in op:
             self.PAssign[b][p] = i
             self.HostWordCount[i] += self.PWordCount[b][p]
@@ -178,12 +151,24 @@ class AssignHost(object):
 
 
     def do(self):
-        #return "Underconstruction. . ."
+        #raise InvalidOperation("The page is under construction. . .")
+        '''
+        ====================DOC CATCHER====================
+        '''
+        self.docID = self.client.get_latest_script_ID()
+        self.thread = self.client.get_thread(id=self.docID)
+        '''
+        #docURL = "Z0R5AhbLjUxu" # test doc 0309-c
+        docURL = "YHb8AyYLNgvi" # test doc 0309-cc
+        self.thread = self.client.get_thread(id=docURL)
+        self.docID = self.thread['thread']['id']
+        '''
         '''
         ====================DOC PRE-PROCESSOR====================
         extract SWordCount and SID
         '''
-        if self.thread["html"].find(r'<i>//')!=-1: return "You have run this at least once!"
+        if self.thread["html"].find(r'<i>//')!=-1:
+            raise InvalidOperation("Redundancy Warning: The script has already been divided and assigned!")
         self.docHTML = self.thread["html"].decode('utf-8').encode('ascii', 'ignore') #clear all non-ascii
         self.docHTML = re.sub(r'<h1.+<\/h1>', '', self.docHTML, count=1) #delete the header
         
@@ -194,9 +179,9 @@ class AssignHost(object):
         =====================SETTINGS====================
         '''    
         self.SWordCount = parser.SWordCount
-        self.SWordCount = [ [ swc*self.BWeight[b] for swc in self.SWordCount[b] ] for b in xrange(self.BN) ]     # B[S[]], weighted
+        self.SWordCount = [[swc*self.BWeight[b] for swc in self.SWordCount[b]] for b in xrange(self.BN)] # B[S[]], weighted
         self.SID = parser.SID
-        self.SNperB = [ len(b) for b in self.SWordCount ]     # B[SN]
+        self.SNperB = [len(b) for b in self.SWordCount]     # B[SN]
         for i in xrange(self.BN):
             if self.PNperB[i] > self.SNperB[i]: self.PNperB[i] = self.SNperB[i]
         self.CutSign[0][0] = 0
