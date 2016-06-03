@@ -27,7 +27,7 @@ def assign_m(ad_hoc_host):
 @app.route('/newdoc')
 def newdoc():
     NewDocAction = NewDoc()
-    return NewDocAction.do()
+    return NewDocAction.do()
 
 @app.route('/updateweather')
 def updateweather():
