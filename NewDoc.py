@@ -1,10 +1,9 @@
-import datetime
-import quip4aha
+from quip4aha import week, QuipClient4AHA, InvalidOperation
 
 class NewDoc(object):
 
     def __init__(self):
-        NextWednesday = datetime.datetime.today() + datetime.timedelta(days = 5)
+        NextWednesday = week.RecentWeekDay('next Wednesday')
         self.NextWednesdayN = NextWednesday.strftime("%m%d")
         self.NextWednesdayS = NextWednesday.strftime("%B %d")
         if self.NextWednesdayS[-2] == "0":
@@ -28,9 +27,16 @@ class NewDoc(object):
         <p class='line'>&#8203;</p>
         <p class='line'>That is all for today's AHA broadcasting. Thank you for listening, and as always stay classy AHA!</p>
         """ % (self.NextWednesdayS) # &#8203; (or &#x200b;) stands for a place-holder for a blank <p>
-        self.client = quip4aha.QuipClient4AHA()
+        self.client = QuipClient4AHA()
 
     def do(self):
+        try:
+            self.client.get_latest_script_ID()
+        except InvalidOperation:
+            pass
+        else:
+            raise InvalidOperation("Redundancy Warning: The script has already been created!")
+        
         self.client.new_document(content=self.ctx, format="html", title=self.NextWednesdayN, member_ids=[self.client.AHABC_ID])
         return "Done!"
 
