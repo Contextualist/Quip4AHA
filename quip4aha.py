@@ -35,7 +35,7 @@ class QuipClient4AHA(QuipClient):
     def get_latest_script_ID(self):
         AHABC = self.get_folder_AHABC()
         nxtwed = week.RecentWeekDay('next Wednesday')
-        title = '%s%s%s' % ('0' if nxtwed.month<10 else '', nxtwed.month, nxtwed.day)
+        title = nxtwed.strftime('%m%d')
         #lstfri = [int(time.mktime(
         #    time.strptime('%s 16:10:00' % (week.RecentWeekday('last Friday')), "%Y-%m-%d %H:%M:%S")))]
         docID = []
