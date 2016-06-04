@@ -30,7 +30,7 @@ class QuipClient4AHA(QuipClient):
             # Harry's access token.
     
     def get_folder_AHABC(self):
-        return self.get_folder(id=AHABC_ID)
+        return self.get_folder(id=self.AHABC_ID)
     
     def get_latest_script_ID(self):
         AHABC = self.get_folder_AHABC()
@@ -81,5 +81,5 @@ week = Week()
 class InvalidOperation(Exception):
     """Exception for all actions that take place when the conditions are not fulfilled."""
     def __init__(self, message, http_code=None):
-        Exception.__init__(self, "InvalidOperation: %s" % (message))
+        Exception.__init__(self, message)
         self.code = http_code or 202
