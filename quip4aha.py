@@ -40,9 +40,8 @@ class QuipClient4AHA(QuipClient):
         #    time.strptime('%s 16:10:00' % (week.RecentWeekday('last Friday')), "%Y-%m-%d %H:%M:%S")))]
         docID = []
         for td in AHABC['children']:
-            if (('thread_id' in td) and (td['title']==title)):
+            if (('thread_id' in td) and (self.get_thread(td['thread_id'])['thread']['title']==title)):
                 docID.append(td['thread_id'])
-                break
         if docID == []:
             raise InvalidOperation("Script not found: There's no legitimate host script for next week's broadcast.")
         if len(docID) > 1:
