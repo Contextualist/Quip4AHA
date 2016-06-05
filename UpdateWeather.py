@@ -24,7 +24,8 @@ class UpdateWeather(object):
         self.NextNDay = week.DaysTo('next Wednesday')
         if self.NextNDay > 3:
             raise InvalidOperation("Unable to get the weather for Wednesday: "
-                                   "WunderStation only gives prediction for today and 3 days ahead.")
+                                   "WunderStation only gives prediction for today and 3 days ahead. "
+                                   "But it's %d days to next Wednesday." % (self.NextNDay))
         response = json.loads(urllib2.urlopen(
             "http://api.wunderground.com/api/01702baefa3fbf8e/forecast/q/CN/Guangzhou.json").read())
         data = response['forecast']['simpleforecast']['forecastday'][self.NextNDay]
@@ -48,8 +49,8 @@ class UpdateWeather(object):
                "It is Wednesday, %s. "
                "The weather for today is %s. "
                "There is %s%% chance of rain. "
-               "The high temperature today will be %s degrees Celsius, which is %s degrees Fahrenheit.") % (
-                   date, self.Condition, "%s %s" % ("an" if self.RainPercentage=='80' else "a", self.RainPercentage),
+               "The high temperature today will be %d degrees Celsius, which is %d degrees Fahrenheit.") % (
+                   date, self.Condition, "%s %d" % ("an" if self.RainPercentage==80 else "a", self.RainPercentage),
                    self.TemperatureC, self.TemperatureF)
         
         '''
