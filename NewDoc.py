@@ -8,25 +8,7 @@ class NewDoc(object):
         self.NextWednesdayS = NextWednesday.strftime("%B %d")
         if self.NextWednesdayS[-2] == "0":
             self.NextWednesdayS = self.NextWednesdayS[:-2] + self.NextWednesdayS[-1];
-        self.ctx = """<p class='line'>Good Morning AHA!<br/>
-        It is Wednesday, %s. The weather for today is __. There is a(n) __%% chance of rain. The high temperature today will be __ degrees Celsius, which is __ degrees Fahrenheit.</p>
-        <p class='line'>&#8203;</p>
-        <p class='line'><b>Now for this week in history:</b></p>
-        <p class='line'>&#8203;</p>
-        <p class='line'>&#8203;</p>
-        <p class='line'><b>In World News:</b></p>
-        <p class='line'>&#8203;</p>
-        <p class='line'>&#8203;</p>
-        <p class='line'><b>Now for the fun facts:</b></p>
-        <p class='line'>&#8203;</p>
-        <p class='line'>&#8203;</p>
-        <p class='line'><b>In AHA News:</b></p>
-        <p class='line'>&#8203;</p>
-        <p class='line'>&#8203;</p>
-        <p class='line'>We will close with this/these verse(s) from</p>
-        <p class='line'>&#8203;</p>
-        <p class='line'>That is all for today's AHA broadcasting. Thank you for listening, and as always stay classy AHA!</p>
-        """ % (self.NextWednesdayS) # &#8203; (or &#x200b;) stands for a place-holder for a blank <p>
+        self.ctx = ""
         self.client = QuipClient4AHA()
 
     def do(self):
@@ -36,6 +18,13 @@ class NewDoc(object):
             pass
         else:
             raise InvalidOperation("Redundancy Warning: The script has already been created!")
+        
+        template = urllib2.urlopen(
+            "http://pastebin.com/raw/3cLgvDXe").read()
+            # &#8203; (or &#x200b;) stands for a place-holder for a blank <p>
+        if template == "cancel":
+            raise InvalidOperation("The template indicates a cancelation for this week!")
+        self.ctx = template.format(self.NextWednesdayS)
         
         self.client.new_document(content=self.ctx, format="html", title=self.NextWednesdayN, member_ids=[self.client.AHABC_ID])
         return "Done!"
