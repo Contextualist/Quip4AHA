@@ -45,11 +45,11 @@ class UpdateWeather(object):
         '''
         SID, date = re.search(
             r"<p id='([a-zA-Z0-9]{11})'.*?>Good Morning AHA.+?Wednesday\, ([\w ]+)\..+?<\/p>", html).group(1,2)
-        ctx = ("Good Morning AHA!<br/>"
+        ctx = ("<p class='line'>Good Morning AHA!<br/>"
                "It is Wednesday, %s. "
                "The weather for today is %s. "
                "There is %s%% chance of rain. "
-               "The high temperature today will be %d degrees Celsius, which is %d degrees Fahrenheit.") % (
+               "The high temperature today will be %d degrees Celsius, which is %d degrees Fahrenheit.</p>") % (
                    date, self.Condition, "%s %d" % ("an" if self.RainPercentage==80 else "a", self.RainPercentage),
                    self.TemperatureC, self.TemperatureF)
         
