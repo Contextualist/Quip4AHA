@@ -45,7 +45,7 @@ class QuipClient4AHA(QuipClient):
         if docID == []:
             raise InvalidOperation("Script not found: There's no legitimate host script for next week's broadcast.")
         if len(docID) > 1:
-            raise InvalidOperation("More than one legitimate script was found!")
+            raise InvalidOperation("Redundancy Error: More than one scripts for the next broadcast are found!", 409)
         return docID[0]
 
 
