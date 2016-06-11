@@ -19,10 +19,12 @@ class NewDoc(object):
         
         try:
             self.client.get_latest_script_ID()
-        except InvalidOperation:
-            pass
+        except InvalidOperation as e:
+            if e.code == 409:
+                raise e # redundancy error
+            #else: pass # script not found
         else:
-            raise InvalidOperation("Redundancy Warning: The script has already been created!")
+            raise InvalidOperation("Redundancy Warning: The script has already been created.")
         
         self.client.new_document(content=self.ctx, format="html", title=self.NextWednesdayN, member_ids=[self.client.AHABC_ID])
         return "Done!"
