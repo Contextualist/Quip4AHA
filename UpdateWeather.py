@@ -24,8 +24,8 @@ class UpdateWeather(object):
         self.NextNDay = week.DaysTo('next Wednesday')
         if self.NextNDay > 3:
             raise InvalidOperation("Unable to get the weather for Wednesday: "
-                                   "WunderStation only gives prediction for today and 3 days ahead. "
-                                   "But it's %d days to next Wednesday." % (self.NextNDay))
+                                   "WunderStation only gives prediction for today and 3 days ahead. \n"
+                                   "But it's {} days to next Wednesday.".format(self.NextNDay))
         response = json.loads(urllib2.urlopen(
             "http://api.wunderground.com/api/01702baefa3fbf8e/forecast/q/CN/Guangzhou.json").read())
         data = response['forecast']['simpleforecast']['forecastday'][self.NextNDay]
@@ -46,12 +46,13 @@ class UpdateWeather(object):
         SID, date = re.search(
             r"<p id='([a-zA-Z0-9]{11})'.*?>Good Morning AHA.+?Wednesday\, ([\w ]+)\..+?<\/p>", html).group(1,2)
         ctx = ("<p class='line'>Good Morning AHA!<br/>"
-               "It is Wednesday, %s. "
-               "The weather for today is %s. "
-               "There is %s%% chance of rain. "
-               "The high temperature today will be %d degrees Celsius, which is %d degrees Fahrenheit.</p>") % (
-                   date, self.Condition, "%s %d" % ("an" if self.RainPercentage==80 else "a", self.RainPercentage),
-                   self.TemperatureC, self.TemperatureF)
+               "It is Wednesday, {date}. "
+               "The weather for today is {condition}. "
+               "There is {rain_pc}% chance of rain. "
+               "The high temperature today will be {t_c} degrees Celsius, which is {t_f} degrees Fahrenheit.</p>").format(
+                   date=date, condition=self.Condition,
+                   rain_pc='{} {}'.format('an' if self.RainPercentage==80 else 'a', self.RainPercentage),
+                   t_c=self.TemperatureC, t_f=self.TemperatureF)
         
         '''
         ====================POST DATA====================
