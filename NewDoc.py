@@ -15,7 +15,7 @@ class NewDoc(object):
         # In the template, &#8203; (or &#x200b;) stands for a place-holder for a blank <p>.
         if template == "cancel":
             raise InvalidOperation("The template indicates a cancelation for this week!")
-        self.ctx = template.format(self.NextWednesdayS)
+        self.ctx = template.format(NextWednesdayS=self.NextWednesdayS)
         
         try:
             self.client.get_latest_script_ID()
