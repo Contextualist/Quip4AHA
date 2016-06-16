@@ -14,7 +14,7 @@ class NewDoc(object):
         template = urllib2.urlopen("http://pastebin.com/raw/3cLgvDXe").read()
         # In the template, &#8203; (or &#x200b;) stands for a place-holder for a blank <p>.
         if template == "cancel":
-            raise InvalidOperation("The template indicates a cancelation for this week!")
+            raise InvalidOperation("The template indicates a cancelation for the next broadcast!")
         self.ctx = template.format(NextWednesdayS=self.NextWednesdayS)
         
         try:
