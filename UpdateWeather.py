@@ -25,7 +25,7 @@ class UpdateWeather(object):
         if self.NextNDay > 3:
             raise InvalidOperation("Unable to get the weather for Wednesday: "
                                    "WunderStation only gives prediction for today and 3 days ahead. \n"
-                                   "But it's {} days to next Wednesday.".format(self.NextNDay))
+                                   "But it's now {} days to next Wednesday.".format(self.NextNDay))
         response = json.loads(urllib2.urlopen(
             "http://api.wunderground.com/api/01702baefa3fbf8e/forecast/q/CN/Guangzhou.json").read())
         data = response['forecast']['simpleforecast']['forecastday'][self.NextNDay]
