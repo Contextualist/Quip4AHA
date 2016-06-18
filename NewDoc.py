@@ -5,8 +5,8 @@ class NewDoc(object):
 
     def __init__(self):
         NextWednesday = week.RecentWeekDay('next Wednesday')
-        self.NextWednesdayN = NextWednesday.strftime("%m%d")
-        self.NextWednesdayS = NextWednesday.strftime("%B %-d")
+        self.NextBCDateNum = NextWednesday.strftime("%m%d")
+        self.NextBCDateStr = NextWednesday.strftime("%B %-d")
         self.ctx = ""
         self.client = QuipClient4AHA()
 
@@ -15,7 +15,7 @@ class NewDoc(object):
         # In the template, &#8203; (or &#x200b;) stands for a place-holder for a blank <p>.
         if template == "cancel":
             raise InvalidOperation("The template indicates a cancelation for the next broadcast!")
-        self.ctx = template.format(NextWednesdayS=self.NextWednesdayS)
+        self.ctx = template.format(NextBCDate=self.NextBCDateStr)
         
         try:
             self.client.get_latest_script_ID()
@@ -26,7 +26,7 @@ class NewDoc(object):
         else:
             raise InvalidOperation("Redundancy Warning: The script has already been created.")
         
-        self.client.new_document(content=self.ctx, format="html", title=self.NextWednesdayN, member_ids=[self.client.AHABC_ID])
+        self.client.new_document(content=self.ctx, format="html", title=self.NextBCDateNum, member_ids=[self.client.AHABC_ID])
         return "Done!"
 
 if __name__=="__main__":
