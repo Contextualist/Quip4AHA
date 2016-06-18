@@ -10,7 +10,7 @@ class UpdateWeather(object):
             'Thunderstorm':'rainy', 'Chance of a Thunderstorm':'rainy', 'Rain':'rainy'}
     
     def __init__(self):
-        self.NextNDay = 0
+        self.NDaysLater = 0
         self.Condition = ''
         self.RainPercentage = ''
         self.TemperatureC = ''
@@ -21,14 +21,14 @@ class UpdateWeather(object):
         '''
         ==================FORECAST DATA==================
         '''
-        self.NextNDay = week.DaysTo('next Wednesday')
-        if self.NextNDay > 3:
+        self.NDaysLater = week.DaysTo('next Wednesday')
+        if self.NDaysLater > 3:
             raise InvalidOperation("Unable to get the weather for Wednesday: "
                                    "WunderStation only gives prediction for today and 3 days ahead. \n"
-                                   "But it's now {} days to next Wednesday.".format(self.NextNDay))
+                                   "But it's now {} days to next Wednesday.".format(self.NDaysLater))
         response = json.loads(urllib2.urlopen(
             "http://api.wunderground.com/api/01702baefa3fbf8e/forecast/q/CN/Guangzhou.json").read())
-        data = response['forecast']['simpleforecast']['forecastday'][self.NextNDay]
+        data = response['forecast']['simpleforecast']['forecastday'][self.NDaysLater]
         self.Condition = self.SIMP.get(data['conditions'], data['conditions'].lower())
         self.RainPercentage = data['pop']
         self.TemperatureC = data['high']['celsius']
