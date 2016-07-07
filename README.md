@@ -1,3 +1,5 @@
+**Legacy repo: Because of a fatal bug that disabled my updating the app on GAE, I has stopped maintaining this GAE project and [has transplanted it to DaoCloud](https://github.com/Contextualist/Quip4AHA-docker-2).**
+
 ## Automatic Quip Job Script for AHA Broadcast
 The scripts call [Quip](https://quip.com) API though [its official Python library](https://github.com/quip/quip-api) to perform certain automatic tasks on the broadcast doc.
 
